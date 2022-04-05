@@ -1,0 +1,24 @@
+# Description of the Issue
+I am using Titanium SDK 10.1.1.GA.
+After I upgraded to iOS 15.4.x from 15.3.x, `Ti.Platform.openURL` stopped working for telephone numbers with a `*` in them.
+I am using this to allow users of my app to place calls hiding their number using `*67` to prefix the called number.
+
+It still works for numbers without a `*`, opening a dialog box confirming the choice to dial the number. But when the number is prefixed with `*67` it no longer works.
+I am attaching a sample app reproducing the issue. If you run on 15.3.x, both buttons work to place the call, but if you run on 15.4.x it no longer works.
+
+When tracking down the code path for `openURL` I found that it [simply proxies](https://github.com/tidev/titanium_mobile/blob/b3256959bf84a6fb2e3e86554cdc0867f0d533c3/iphone/Classes/PlatformModule.m#L335) the underlying native openURL function, so this must have been an underlying Apple iOS change that broke it. 
+I was researching the underlying Apple functions, and I found a couple of possibilities. I'm not really sure which one Titanium is using.
+
+1) A method of [UIApplication](https://developer.apple.com/documentation/uikit/uiapplication/1648685-openurl/)
+2) A method of [UIApplicationDelegate](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623112-application?language=objc)
+3) I also saw this [open](https://developer.apple.com/documentation/uikit/uiapplication/1648685-open) method - I'm not sure what the pro's/con's would be of using this over the openURL method.
+
+I also saw that in the [Apple URL scheme Reference](https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/PhoneLinks/PhoneLinks.html#//apple_ref/doc/uid/TP40007899-CH6-SW1) it specifically says that `*` and `#` characters are not supported, but this may be escaped using [stringByAddingPercentageEscapesUsingEncoding](https://developer.apple.com/documentation/foundation/nsstring/1415058-addingpercentescapes). That function is not available in titanium, but I did try encoding the `*` as `%2A` which did not work.
+
+My issue/question is -- is there any functionality that could be added to the titanium iOS library or a way I can use hyperloop to be able to use telephone numbers prefixed with `*67`?
+
+# How to Reproduce
+Using SDK 10.1.1.GA, build the app on an iOS device running v15.4.1.
+You will need a provisioning profile associated with the app id.
+
+`ti build -p ios -T device`
