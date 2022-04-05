@@ -46,6 +46,7 @@
 		</manifest>
 	</android>
 	<modules>
+		<module platform="iphone">hyperloop</module>
 	</modules>
 	<deployment-targets>
 		<target device="android">false</target>
